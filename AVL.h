@@ -11,6 +11,8 @@ template<class T>
 class AVL {
 private:
     //--------------------------Tree fields--------------------------
+    int size;
+
     struct Node{
         int height;
 
@@ -20,7 +22,7 @@ private:
         Node* right;
         Node* parent;
     };
-    int size;
+
 
     Node* root;
     Node* max_val;
@@ -29,9 +31,9 @@ private:
     //--------------------------Node operations--------------------------
     Node* initializeNode(const T& obj);
 
-    Node* findNode(T* toSearch, Node* subtree);
-    Node* insertNode(Node* toInsert, Node* subtree);
-    Node* removeNode(Node* toRemove, Node* subtree);
+    Node* findNode(const T* toSearch, Node* subtree);
+    Node* insertNode(const Node* toInsert, Node* subtree);
+    Node* removeNode(const Node* toRemove, Node* subtree);
 
     Node* balanceNode(Node* toBalance);
 
@@ -70,16 +72,16 @@ public:
 
     template<class T>
     AVL<T>::AVL(const AVL<T>& toCopy) : root(NULL), max_val(NULL), min_val(NULL), size(0){
-        //TODO: custom by value copy implementation required (I quess)
+        //TODO: custom by value copy implementation required (I guess)
     }
 
     //--------------------------Tree operations implementation--------------------------
     template<class T>
     void AVL<T>::insert(const T& toInsert){
-        if(!toSearch)
+        if(!toInsert)
             throw INVALID_INPUT;
 
-        if(find(toSearch))
+        if(find(toInsert))
             throw INVALID_INPUT;
 
         Node* toInsertNode = initializeNode(toInsert);
@@ -104,10 +106,78 @@ public:
         size--;
     }
 
+    template<class T>
+    void AVL<T>::balance(){
+        root = balanceNode(root);
+        max_val = getMaxNode(root);
+        min_val = getMinNode(root);
+    }
+
+    template<class T>
+    int AVL<T>::getHeight(){
+        if(!root)
+            return 0;
+
+        return root->height;
+    }
+
+    //--------------------------Node operations implementation--------------------------
+    template<class T>
+    typename AVL<T>::Node* initializeNode(const T& obj){
+        Node* newNode = new Node*();
+
+        newNode->obj = new T(obj);
+
+        newNode->right = nullptr;
+        newNode->left = nullptr;
+
+        newNode->height = 0; //not sure if it's 1 or 0
+
+        return newNode;
+    }
+
+    template<class T>
+    typename AVL<T>::Node* findNode(const T* toSearch, Node* subtree){
+       if(!subtree)
+           return nullptr;
+
+       if(toSearch == *subtree->obj)
+           return subtree;
+       else if(toSearch > *subtree->obj){
+           return findNode(toSearch, subtree->right);
+       } else {
+           return findNode(toSearch, subtree->left);
+       }
+    }
+
+    template<class T>
+    typename AVL<T>::Node* getMinNode(Node* subtree){
+        if(!subtree)
+            return nullptr;
+
+        if(subtree->left)
+            return getMinNode<T>(subtree->left);
+
+        return subtree;
+    }
+
+    template<class T>
+    typename AVL<T>::Node* getMaxNode(Node* subtree){
+        if(!subtree)
+            return nullptr;
+
+        if(subtree->right)
+            return getMaxNode<T>(subtree->right);
+
+        return subtree;
+    }
 
 
 
 
-};
+
+
+
+}
 
 #endif
