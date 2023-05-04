@@ -13,14 +13,14 @@ private:
     //--------------------------Tree fields--------------------------
     int size;
 
-    struct Node{
+    struct Node {
         int height;
 
-        T* obj;
+        T *obj;
 
-        Node* left;
-        Node* right;
-        Node* parent;
+        Node *left;
+        Node *right;
+        //Node *parent;
     };
 
 
@@ -121,6 +121,71 @@ public:
         return root->height;
     }
 
+    //--------------------------Rotations implementation--------------------------
+    Node* rotateRight(Node* toRotate){  //TODO: Cover the case where toRotate is the root + not sure if parent field needed
+        if(!toRotate || !toRotate->left)
+            return toRotate;
+
+        //Perform the Rotation
+        Node *left = toRotate->left;
+
+        if(left->right){
+            Node *left_right = left->right;
+            toRotate->left = left_right;
+        }
+
+        left->right = toRotate;
+
+        //Adjust the height
+        toRotate->height = max(toRotate->left->height, toRotate->right->height) + 1;
+        left->height = max(left->left->height, left->right->height) + 1;
+
+        //Return the new root of the subtree
+        return left;
+    }
+
+    Node* rotateLeft(Node* toRotate){
+        if(!toRotate || !toRotate->left)
+            return toRotate;
+
+        //Perform the Rotation
+        Node *right = toRotate->right;
+
+        if(right->left){
+            Node *right_left = right->left;
+            toRotate->right = right_left;
+        }
+
+        right->left = toRotate;
+
+        //Adjust the height
+        toRotate->height = max(toRotate->left->height, toRotate->right->height) + 1;
+        right->height = max(right->left->height, right->right->height) + 1;
+
+        //Return the new root of the subtree
+        return right;
+    }
+
+    Node* RL(Node* toRotate) { //Not sure if any additional tests needed since basic rotation methods cover all the adge cases already
+        if(toRotate){
+            Node *right = toRotate->right;
+            toRotate->right = rotateRight(right);
+            return rotateLeft(toRotate);
+        }
+        return nullptr;
+    }
+
+    Node* LR(Node* toRotate){
+        if(toRotate){
+            Node* left = toRotate->left;
+            toRotate->left = rotateLeft(left);
+            return rotateRight(toRotate);
+        }
+        return nullptr;
+    }
+
+    //Note that RR and LL are rotateLeft and rotateRight respectively
+
     //--------------------------Node operations implementation--------------------------
     template<class T>
     typename AVL<T>::Node* initializeNode(const T& obj){
@@ -141,7 +206,9 @@ public:
        if(!subtree)
            return nullptr;
 
+
        if(toSearch == *subtree->obj)
+
            return subtree;
        else if(toSearch > *subtree->obj){
            return findNode(toSearch, subtree->right);
@@ -171,13 +238,6 @@ public:
 
         return subtree;
     }
-
-
-
-
-
-
-
 }
 
 #endif
