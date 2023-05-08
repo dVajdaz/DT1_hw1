@@ -6,10 +6,11 @@
 #define DS1_HW1_AVL_H
 
 #include "wet1util.h"
+#include "math.h"
 
 template<class T>
 class AVL {
-private:
+public:
     //--------------------------Tree fields--------------------------
     int size;
 
@@ -20,85 +21,100 @@ private:
 
         Node *left;
         Node *right;
-        //Node *parent;
+
     };
 
 
-    Node* root;
-    Node* max_val;
-    Node* min_val;
+    Node *root;
 
     //--------------------------Node operations--------------------------
-    Node* initializeNode(const T& obj);
+    Node *initializeNode(const T &obj);
 
-    Node* findNode(const T* toSearch, Node* subtree);
-    Node* insertNode(const Node* toInsert, Node* subtree);
-    Node* removeNode(const Node* toRemove, Node* subtree);
+    Node *findNode(const T *toSearch, Node *subtree);
 
-    Node* balanceNode(Node* toBalance);
+    Node *insertNode(const Node *toInsert, Node *root);
 
-    Node* getMinNode(Node* subtree) const;
-    Node* getMaxNode(Node* subtree) const;
+    //TODO: Remember to free toRemove
+    Node *removeNode(Node *toRemove, Node *root);
 
-    int getNodeBalanceFactor(Node* subtree) const;
-    int getNodeHeight(Node* subtree) const;
+
+    int getNodeBalanceFactor(Node *subtree) const;
+
+    int getNodeHeight(Node *subtree) const;
 
     //--------------------------Rotations--------------------------
-    Node* rotateLeft(Node* toRotate);
-    Node* rotateRight(Node* toRotate);
-    Node* LL(Node* toRotate);
-    Node* LR(Node* toRotate);
-    Node* RR(Node* toRotate);
-    Node* RL(Node* toRotate);
+    Node *rotateLeft(Node *toRotate);
 
+    Node *rotateRight(Node *toRotate);
 
+    Node *LL(Node *toRotate);
 
-public:
+    Node *LR(Node *toRotate);
+
+    Node *RR(Node *toRotate);
+
+    Node *RL(Node *toRotate);
+
+    Node *findParent(const T &toSearch, Node *subtree);
+
+    Node *findPrevNode(const T &toSearch, Node *subtree);
+
+    int BF(Node* subtree);
+
+    bool isLeaf(Node *node);
+
+    bool hasOneSon(Node *node);
+
+    void swap(Node *n1, Node *n2);
+
+    void removeLeft(Node *toRemove, Node *parent);
+
+    void removeRight(Node *toRemove, Node *parent);
+
     AVL();
-    AVL(const AVL<T>& toCopy);
+
+    AVL(const AVL<T> &toCopy);
 
     ~AVL() = default; //TODO: custom implementation required
 
     //--------------------------Tree operations--------------------------
-    void insert(const T& toInsert);
-    void remove(const T& toRemove);
+    void insert(const T &toInsert);
 
-    void balance();
-
-    int getHeight() const;
+    void remove(const T &toRemove);
     //TODO: Might need preorder, postorder ... implementations
 
     //--------------------------Tree initiation implementation--------------------------
+
+};
+    //--------------------------Tree operations implementation--------------------------
     template<class T>
-    AVL<T>::AVL() : root(NULL), max_val(NULL), min_val(NULL), size(0) {}
+    AVL<T>::AVL() : root(NULL),  size(0) {}
 
     template<class T>
-    AVL<T>::AVL(const AVL<T>& toCopy) : root(NULL), max_val(NULL), min_val(NULL), size(0){
+    AVL<T>::AVL(const AVL<T> &toCopy) : root(NULL),size(0) {
         //TODO: custom by value copy implementation required (I guess)
     }
-
-    //--------------------------Tree operations implementation--------------------------
     template<class T>
     void AVL<T>::insert(const T& toInsert){
         if(!toInsert)
-            throw INVALID_INPUT;
+            throw StatusType::INVALID_INPUT;
 
         if(find(toInsert))
-            throw INVALID_INPUT;
+            throw StatusType::INVALID_INPUT;
 
         Node* toInsertNode = initializeNode(toInsert);
 
         root = insertNode(toInsertNode, root);
         /*
         max_val = getMaxNode(root);
-        min_val = getMinNode(root);
-        size++; */
+        min_val = getMinNode(root);*/
+        size++;
     }
 
     template<class T>
     void AVL<T>::remove(const T& toRemove){
         if(!toRemove)
-            throw INVALID_INPUT;
+            throw StatusType::INVALID_INPUT;
 
         if(!findNode(toRemove))
            return;
@@ -106,27 +122,16 @@ public:
         root = removeNode(findNode(toRemove), root);
         /*
         max_val = getMaxNode(root);
-        min_val = getMinNode(root);
-        size--; */
+        min_val = getMinNode(root);*/
+        size--;
     }
 
-    template<class T>
-    void AVL<T>::balance(){
-        root = balanceNode(root);
-        max_val = getMaxNode(root);
-        min_val = getMinNode(root);
-    }
 
-    template<class T>
-    int AVL<T>::getHeight(){
-        if(!root)
-            return 0;
-
-        return root->height;
-    }
 
     //--------------------------Rotations implementation--------------------------
-    Node* rotateRight(Node* toRotate){  //TODO: Cover the case where toRotate is the root + not sure if parent field needed
+    template<class T>
+    typename AVL<T>::Node*
+    AVL<T>::rotateRight(Node* toRotate){  //TODO: Cover the case where toRotate is the root + not sure if parent field needed
         if(!toRotate || !toRotate->left)
             return toRotate;
 
@@ -147,8 +152,9 @@ public:
         //Return the new root of the subtree
         return left;
     }
-
-    Node* rotateLeft(Node* toRotate){
+    template<class T>
+    typename AVL<T>::Node*
+    AVL<T>::rotateLeft(Node* toRotate){
         if(!toRotate || !toRotate->left)
             return toRotate;
 
@@ -169,8 +175,9 @@ public:
         //Return the new root of the subtree
         return right;
     }
-
-    Node* RL(Node* toRotate) { //Not sure if any additional tests needed since basic rotation methods cover all the adge cases already
+    template<class T>
+    typename AVL<T>::Node*
+    AVL<T>::RL(Node* toRotate) { //Not sure if any additional tests needed since basic rotation methods cover all the adge cases already
         if(toRotate){
             Node *right = toRotate->right;
             toRotate->right = rotateRight(right);
@@ -178,8 +185,9 @@ public:
         }
         return nullptr;
     }
-
-    Node* LR(Node* toRotate){
+    template<class T>
+    typename AVL<T>::Node*
+    AVL<T>::LR(Node* toRotate){
         if(toRotate){
             Node* left = toRotate->left;
             toRotate->left = rotateLeft(left);
@@ -192,7 +200,7 @@ public:
 
     //--------------------------Node operations implementation--------------------------
     template<class T>
-    typename AVL<T>::Node* initializeNode(const T& obj){
+    typename AVL<T>::Node* AVL<T>::initializeNode(const T& obj){
         Node* newNode = new Node*();
 
         newNode->obj = new T(obj);
@@ -206,7 +214,7 @@ public:
     }
 
     template<class T>
-    typename AVL<T>::Node* findNode(const T* toSearch, Node* subtree){
+    typename AVL<T>::Node* AVL<T>::findNode(const T* toSearch, Node* subtree){
        if(!subtree)
            return nullptr;
 
@@ -220,7 +228,8 @@ public:
            return findNode(toSearch, subtree->left);
        }
     }
-    typename AVL<T>::Node* parent(const T& toSearch, Node* subtree){
+    template<class T>
+    typename AVL<T>::Node* AVL<T>::findParent(const T& toSearch, Node* subtree){
 
         if((*subtree->right != nullptr && *subtree->right->obj == toSearch)
         || (*subtree->left != nullptr && *subtree->left->obj == toSearch)) { return subtree;}
@@ -231,14 +240,7 @@ public:
             return findNode(toSearch, subtree->left);
         }
     }
-    void updateHeight(Node* v, Node* root) {
-        Node* parent = nullptr;
-        while(v != root) {
-            parent = parent(v->obj, root);
-            parent->height = Math.max(parent->left->height, parent->right->height) + 1;
-            v = p;
-        }
-    }
+
     /**
      *
      * @param toSearch The value of the node
@@ -247,7 +249,8 @@ public:
      * @return a pointer to the node which would be the parent of a Node with the value toSearch,
      * if that node were to be inserted into the tree
      */
-    typename AVL<T>::Node* findPrevNode(const T& toSearch, Node* subtree){
+    template<class T>
+    typename AVL<T>::Node* AVL<T>::findPrevNode(const T& toSearch, Node* subtree){
 
         if(*subtree->obj < toSearch && subtree->left == nullptr) { return subtree;}
 
@@ -258,7 +261,8 @@ public:
             return findNode(toSearch, subtree->left);
         }
     }
-    int BF(Node* subtree) {
+    template<class T>
+    int AVL<T>::BF(Node* subtree) {
         int right_height;
         if(subtree->right == nullptr) {
             right_height = -1;
@@ -271,18 +275,19 @@ public:
 
 
     }
-    typename AVL<T>::Node* insertNode(Node* toInsert, Node* subtree) {
+    template<class T>
+    typename AVL<T>::Node* AVL<T>::insertNode(const Node* toInsert, Node* root) {
         //Finding the node that should be toInsert's parent
-        Node* parent = findPrevNode(toInsert->obj, subtree);
+        Node* parent = findPrevNode(toInsert->obj, root);
         //Checking whether toInsert should be the left child or the right child and inserting him accordingly
-        if(parent->obj < toInsert->obj) { parent->left = toInsert};
+        if(parent->obj < toInsert->obj) { parent->left = toInsert;}
         else { parent->right = toInsert; }
         //Checking the balance of the tree and rotating if needed
         while(toInsert != root) {
             //Checking if the parent's height has changed
-            if(parent.height > toInsert.height) { return subtree;}
+            if(parent->height > toInsert->height) { return root;}
             //Updating the parent's height
-            parent.height = toInsert.height + 1;
+            parent->height = toInsert->height + 1;
             //Checking for rotations
             if(BF(parent) == 2 || BF(parent) == -2) {
                 if(BF(parent) == 2) {
@@ -292,26 +297,31 @@ public:
                 if(BF(toInsert) <=0) {return RR(parent);}
                 return RL(parent);
             }
-            parent = parent(toInsert->obj, subtree);
+            parent = findParent(toInsert->obj, root);
         }
 
     }
-    bool isLeaf(Node* node) {
+    template<class T>
+    bool AVL<T>::isLeaf(Node* node) {
         return node->left == nullptr && node->right == nullptr;
     }
-    bool hasOneSon(Node* node) {
+    template<class T>
+    bool AVL<T>::hasOneSon(Node* node) {
         return (node->left == nullptr && node->right != nullptr) ||
-                (node->left != nullptr && node->right == nullptr)
+                (node->left != nullptr && node->right == nullptr);
     }
-    void swap(Node* n1, Node* n2) {
+    template<class T>
+    void AVL<T>::swap(Node* n1, Node* n2) {
         T temp = *n1->obj;
         *n1->obj = *n2->obj;
         *n2->obj = temp;
     }
-    void removeLeft(Node* toRemove, Node* parent) {
+    //TODO: Combine removeLeft and removeRight
+    template<class T>
+    void AVL<T>::removeLeft(Node* toRemove, Node* parent) {
         if(isLeaf(toRemove)) {
             parent->left = nullptr;
-            free(toRemove);
+            free(toRemove); //TODO: Change from free to delete
         }
         else if(hasOneSon(toRemove)) {
             if(toRemove->right == nullptr) {
@@ -327,13 +337,14 @@ public:
             Node* nextInOrder = toRemove->right;
             while(nextInOrder->left != nullptr) { nextInOrder = nextInOrder->left;}
             swap(nextInOrder, toRemove);
-            parent = parent(nextInOrder);
+            parent = findParent(nextInOrder);
             removeLeft(nextInOrder, parent);
         }
 
 
     }
-    void removeRight(Node* toRemove, Node* parent) {
+    template<class T>
+    void AVL<T>::removeRight(Node* toRemove, Node* parent) {
         if(isLeaf(toRemove)) {
             parent->right = nullptr;
             free(toRemove);
@@ -348,55 +359,39 @@ public:
             }
             free(toRemove);
         }
+        //TODO: fix this removal
         else {
             Node* nextInOrder = toRemove->right;
             while(nextInOrder->left != nullptr) { nextInOrder = nextInOrder->left;}
             swap(nextInOrder, toRemove);
-            parent = parent(nextInOrder);
+            parent = findParent(nextInOrder);
             removeLeft(nextInOrder, parent);
         }
 
 
     }
-    typename ::AVL<T>::Node* removeNode(Node* toRemove, Node* root) {
-        Node* parent = parent(toRemove);
+    template<class T>
+    typename AVL<T>::Node* AVL<T>::removeNode(Node* toRemove, Node* root) {
+        //TODO: Check the case where toRemove is the root.
+
+        Node* parent = findParent(toRemove);
         if(parent->left == toRemove) {
             removeLeft(toRemove, parent);
         }
         else { removeRight(toRemove, parent); }
         while (parent != root) {
-            parent->height = 1 + Math.max(parent->right, parent->left);
-            if(Math.abs(BF(parent)) == 2) {
+            parent->height = 1 + max(parent->right, parent->left);
+            if(abs(BF(parent)) == 2) {
                 if(BF(parent) == 2) {
-                    if(BF(toInsert) >= 0) {return LL(parent);}
+                    if(BF(toRemove) >= 0) {return LL(parent);}
                     return LR(parent);
                 }
-                if(BF(toInsert) <=0) {return RR(parent);}
+                if(BF(toRemove) <=0) {return RR(parent);}
                 return RL(parent);
             }
         }
     }
-    template<class T>
-    typename AVL<T>::Node* getMinNode(Node* subtree){
-        if(!subtree)
-            return nullptr;
 
-        if(subtree->left)
-            return getMinNode<T>(subtree->left);
-
-        return subtree;
-    }
-
-    template<class T>
-    typename AVL<T>::Node* getMaxNode(Node* subtree){
-        if(!subtree)
-            return nullptr;
-
-        if(subtree->right)
-            return getMaxNode<T>(subtree->right);
-
-        return subtree;
-    }
-}
 
 #endif
+
