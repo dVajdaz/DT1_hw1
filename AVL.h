@@ -22,6 +22,7 @@ public:
         Node *left;
         Node *right;
 
+        //Node* parent;
     };
 
 
@@ -30,9 +31,9 @@ public:
     //--------------------------Node operations--------------------------
     Node *initializeNode(const T &obj);
 
-    Node *findNode(const T *toSearch, Node *subtree);
+    Node *findNode(const T& toSearch, Node *subtree);
 
-    Node *insertNode(const Node *toInsert, Node *root);
+    Node *insertNode(Node *toInsert, Node *root);
 
     //TODO: Remember to free toRemove
     Node *removeNode(Node *toRemove, Node *root);
@@ -57,7 +58,7 @@ public:
 
     Node *findParent(const T &toSearch, Node *subtree);
 
-    Node *findPrevNode(const T &toSearch, Node *subtree);
+    //Node *findPrevNode(const T &toSearch, Node *subtree);
 
     int BF(Node* subtree);
 
@@ -67,15 +68,17 @@ public:
 
     void swap(Node *n1, Node *n2);
 
-    void removeLeft(Node *toRemove, Node *parent);
+    void removeBST(Node *toRemove, Node *parent);
 
-    void removeRight(Node *toRemove, Node *parent);
+    void removeRoot(Node* root);
 
     AVL();
 
     AVL(const AVL<T> &toCopy);
 
     ~AVL() = default; //TODO: custom implementation required
+
+    void updateHeight(Node* toUpdate);
 
     //--------------------------Tree operations--------------------------
     void insert(const T &toInsert);
@@ -98,13 +101,17 @@ public:
     void AVL<T>::insert(const T& toInsert){
         if(!toInsert)
             throw StatusType::INVALID_INPUT;
+        if(!this->root) {
+            root = initializeNode(toInsert);
+        }
+        else {
+            if (findNode(toInsert, root))
+                throw StatusType::INVALID_INPUT;
 
-        if(find(toInsert))
-            throw StatusType::INVALID_INPUT;
+            Node *toInsertNode = initializeNode(toInsert);
 
-        Node* toInsertNode = initializeNode(toInsert);
-
-        root = insertNode(toInsertNode, root);
+            root = insertNode(toInsertNode, root);
+        }
         /*
         max_val = getMaxNode(root);
         min_val = getMinNode(root);*/
@@ -116,17 +123,32 @@ public:
         if(!toRemove)
             throw StatusType::INVALID_INPUT;
 
-        if(!findNode(toRemove))
+        if(!findNode(toRemove, root))
            return;
 
-        root = removeNode(findNode(toRemove), root);
+        root = removeNode(findNode(toRemove, root), root);
         /*
         max_val = getMaxNode(root);
         min_val = getMinNode(root);*/
         size--;
     }
 
+    template<class T>
+    void AVL<T>::updateHeight(Node* toUpdate) {
+        if(isLeaf(toUpdate)) {
+            toUpdate->height = 0;
+        }
+        else if(toUpdate->right && toUpdate->left) {
+            toUpdate->height = 1+ std::max(toUpdate->right->height, toUpdate->left->height);
+        }
+        else if(toUpdate->left) {
+            toUpdate->height = toUpdate->left->height + 1;
+        }
+        else if(toUpdate->right) {
+            toUpdate->height = toUpdate->right->height + 1;
+        }
 
+    }
 
     //--------------------------Rotations implementation--------------------------
     template<class T>
@@ -142,12 +164,15 @@ public:
             Node *left_right = left->right;
             toRotate->left = left_right;
         }
-
+        toRotate->left = left->right;
         left->right = toRotate;
 
         //Adjust the height
-        toRotate->height = max(toRotate->left->height, toRotate->right->height) + 1;
-        left->height = max(left->left->height, left->right->height) + 1;
+        if(toRotate->right) {
+            toRotate->height = std::max(toRotate->left->height, toRotate->right->height) + 1;
+        }
+        updateHeight(toRotate);
+        updateHeight(left);
 
         //Return the new root of the subtree
         return left;
@@ -155,7 +180,7 @@ public:
     template<class T>
     typename AVL<T>::Node*
     AVL<T>::rotateLeft(Node* toRotate){
-        if(!toRotate || !toRotate->left)
+        if(!toRotate || !toRotate->right)
             return toRotate;
 
         //Perform the Rotation
@@ -165,12 +190,12 @@ public:
             Node *right_left = right->left;
             toRotate->right = right_left;
         }
-
+        toRotate->right = right->left;
         right->left = toRotate;
 
         //Adjust the height
-        toRotate->height = max(toRotate->left->height, toRotate->right->height) + 1;
-        right->height = max(right->left->height, right->right->height) + 1;
+        updateHeight(toRotate);
+        updateHeight(right);
 
         //Return the new root of the subtree
         return right;
@@ -201,20 +226,20 @@ public:
     //--------------------------Node operations implementation--------------------------
     template<class T>
     typename AVL<T>::Node* AVL<T>::initializeNode(const T& obj){
-        Node* newNode = new Node*();
+        Node* newNode = new Node();
 
         newNode->obj = new T(obj);
 
         newNode->right = nullptr;
         newNode->left = nullptr;
 
-        newNode->height = 0; //not sure if it's 1 or 0
+        newNode->height = 0;
 
         return newNode;
     }
 
     template<class T>
-    typename AVL<T>::Node* AVL<T>::findNode(const T* toSearch, Node* subtree){
+    typename AVL<T>::Node* AVL<T>::findNode(const T& toSearch, Node* subtree){
        if(!subtree)
            return nullptr;
 
@@ -230,14 +255,20 @@ public:
     }
     template<class T>
     typename AVL<T>::Node* AVL<T>::findParent(const T& toSearch, Node* subtree){
-
-        if((*subtree->right != nullptr && *subtree->right->obj == toSearch)
-        || (*subtree->left != nullptr && *subtree->left->obj == toSearch)) { return subtree;}
+        if(*subtree->obj == toSearch) {
+            return subtree;
+        }
+        if((subtree->right != nullptr && *subtree->right->obj == toSearch)
+        || (subtree->left != nullptr && *subtree->left->obj == toSearch)) { return subtree;}
 
         else if(toSearch > *subtree->obj){
-            return findNode(toSearch, subtree->right);
+            if(subtree->right == nullptr)
+                return subtree;
+            return findParent(toSearch, subtree->right);
         } else {
-            return findNode(toSearch, subtree->left);
+            if(subtree->left == nullptr)
+                return subtree;
+            return findParent(toSearch, subtree->left);
         }
     }
 
@@ -248,7 +279,7 @@ public:
      * an ordered AVL tree.
      * @return a pointer to the node which would be the parent of a Node with the value toSearch,
      * if that node were to be inserted into the tree
-     */
+
     template<class T>
     typename AVL<T>::Node* AVL<T>::findPrevNode(const T& toSearch, Node* subtree){
 
@@ -260,28 +291,29 @@ public:
         } else {
             return findNode(toSearch, subtree->left);
         }
-    }
+    } **/
     template<class T>
     int AVL<T>::BF(Node* subtree) {
-        int right_height;
+        int right_height, left_height;
         if(subtree->right == nullptr) {
             right_height = -1;
-            if(subtree->left == nullptr) {
-                return 0;
-            }
-            return subtree->left->height - right_height;
+
         }
-        return subtree->left->height - subtree->right->height;
+        else { right_height = subtree->right->height;}
+        if(subtree->left == nullptr) {
+            left_height = -1;
 
-
+        }
+        else { left_height = subtree->left->height;}
+        return left_height - right_height;
     }
     template<class T>
-    typename AVL<T>::Node* AVL<T>::insertNode(const Node* toInsert, Node* root) {
+    typename AVL<T>::Node* AVL<T>::insertNode(Node* toInsert, Node* root) {
         //Finding the node that should be toInsert's parent
-        Node* parent = findPrevNode(toInsert->obj, root);
+        Node* parent = findParent(*toInsert->obj, root);
         //Checking whether toInsert should be the left child or the right child and inserting him accordingly
-        if(parent->obj < toInsert->obj) { parent->left = toInsert;}
-        else { parent->right = toInsert; }
+        if(*parent->obj < *toInsert->obj) { parent->right = toInsert;}
+        else { parent->left = toInsert; }
         //Checking the balance of the tree and rotating if needed
         while(toInsert != root) {
             //Checking if the parent's height has changed
@@ -290,16 +322,31 @@ public:
             parent->height = toInsert->height + 1;
             //Checking for rotations
             if(BF(parent) == 2 || BF(parent) == -2) {
+                Node* parentOfUnbalanced = findParent(parent);
                 if(BF(parent) == 2) {
-                    if(BF(toInsert) >= 0) {return LL(parent);}
-                    return LR(parent);
+                    if(parent->left && BF(parent->left) >= 0) {
+                        if(parentOfUnbalanced->left == parent) {
+                            parentOfUnbalanced->left = rotateRight(parent);
+                        }
+                        else
+                            parentOfUnbalanced->right = rotateRight(parent);
+                    }
+                    else
+                        parent = LR(parent);
                 }
-                if(BF(toInsert) <=0) {return RR(parent);}
-                return RL(parent);
+                if(BF(parent) == -2) {
+                    if (parent->right && BF(parent->right) <= 0) {
+                        parent =  rotateLeft(parent);
+                    }
+                    else
+                        parent =  RL(parent);
+                }
+                return root;
             }
-            parent = findParent(toInsert->obj, root);
+            toInsert = parent;
+            parent = findParent(*toInsert->obj, root);
         }
-
+        return root;
     }
     template<class T>
     bool AVL<T>::isLeaf(Node* node) {
@@ -316,33 +363,64 @@ public:
         *n1->obj = *n2->obj;
         *n2->obj = temp;
     }
-    //TODO: Combine removeLeft and removeRight
     template<class T>
-    void AVL<T>::removeLeft(Node* toRemove, Node* parent) {
+    void AVL<T>::removeBST(Node* toRemove, Node* parent) {
         if(isLeaf(toRemove)) {
-            parent->left = nullptr;
-            free(toRemove); //TODO: Change from free to delete
-        }
-        else if(hasOneSon(toRemove)) {
-            if(toRemove->right == nullptr) {
-                parent->left = toRemove->left;
-            }
-            else {
-                parent->left = toRemove->right;
+            if(parent->left == toRemove) {
+                parent->left = nullptr;
 
             }
-            free(toRemove);
+            else {
+                parent->right = nullptr;
+
+            }
+            delete toRemove;
+        }
+        else if(hasOneSon(toRemove)) {
+            if(parent->left == toRemove) {
+                if (toRemove->right == nullptr) {
+                    parent->left = toRemove->left;
+                } else {
+                    parent->left = toRemove->right;
+
+                }
+            }
+            else {
+                if (toRemove->right == nullptr) {
+                    parent->right = toRemove->left;
+                } else {
+                    parent->right = toRemove->right;
+
+                }
+            }
+            delete toRemove;
         }
         else {
             Node* nextInOrder = toRemove->right;
             while(nextInOrder->left != nullptr) { nextInOrder = nextInOrder->left;}
             swap(nextInOrder, toRemove);
-            parent = findParent(nextInOrder);
-            removeLeft(nextInOrder, parent);
+            parent = findParent(*nextInOrder->obj, root);
+            removeBST(nextInOrder, parent);
         }
 
 
     }
+    template<class T>
+    void AVL<T>::removeRoot(Node *root) {
+        Node* toRemove = nullptr;
+        if(isLeaf(root)) { delete root;}
+        if (hasOneSon(root)) {
+            toRemove = root;
+            if(root->right == nullptr) {
+                root = root->left;
+            }
+            else { root = root->right;}
+            toRemove->right = nullptr;
+            toRemove->left = nullptr;
+            delete toRemove;
+        }
+    }
+    /*
     template<class T>
     void AVL<T>::removeRight(Node* toRemove, Node* parent) {
         if(isLeaf(toRemove)) {
@@ -369,24 +447,21 @@ public:
         }
 
 
-    }
+    } */
     template<class T>
     typename AVL<T>::Node* AVL<T>::removeNode(Node* toRemove, Node* root) {
         //TODO: Check the case where toRemove is the root.
 
-        Node* parent = findParent(toRemove);
-        if(parent->left == toRemove) {
-            removeLeft(toRemove, parent);
-        }
-        else { removeRight(toRemove, parent); }
+        Node* parent = findParent(*toRemove->obj, root);
+        removeBST(toRemove, parent);
         while (parent != root) {
-            parent->height = 1 + max(parent->right, parent->left);
+            parent->height = 1 + std::max(parent->right->height, parent->left->height);
             if(abs(BF(parent)) == 2) {
                 if(BF(parent) == 2) {
-                    if(BF(toRemove) >= 0) {return LL(parent);}
+                    if(BF(toRemove) >= 0) {return rotateRight(parent);}
                     return LR(parent);
                 }
-                if(BF(toRemove) <=0) {return RR(parent);}
+                if(BF(toRemove) <=0) {return rotateLeft(parent);}
                 return RL(parent);
             }
         }
