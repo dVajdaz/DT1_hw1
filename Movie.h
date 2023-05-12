@@ -9,12 +9,12 @@
 
 class Movie {
 private:
-    int id;
+    const int id;
     int views;
 
     double rating;
 
-    bool vipOnly;
+    const bool vipOnly;
 
     Genre genre;
 
