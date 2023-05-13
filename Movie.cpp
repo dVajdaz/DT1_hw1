@@ -3,7 +3,7 @@
 //
 
 #include "Movie.h"
-Movie::Movie(int id,  Genre genre, bool vip) : id(id), views(0), rating(0.0), genre(genre), vipOnly(vip){}
+Movie::Movie(int id, int views,  Genre genre, bool vip) : id(id), views(views), rating(0.0), genre(genre), vipOnly(vip){}
 
 //--------------------------Setters--------------------------
 void Movie::addViews(const int toAdd) {

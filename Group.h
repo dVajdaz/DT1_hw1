@@ -6,15 +6,24 @@
 #define DS1_HW1_GROUP_H
 
 #include "User.h"
+#include "Movie.h"
+
+#include "wet1util.h"
+
+#include "AVL.h"
+
+class User;
+
+struct Node {
+    User *user;
+    Node* prev;
+    Node* next;
+    Node(User *user, Node* prev, Node* next) : user(user), prev(prev), next(next) {}
+};
+
 
 class Group {
 private:
-    struct Node {
-        User* user;
-        Node* prev;
-        Node* next;
-        Node(User* user, Node* prev, Node* next) : user(user), prev(prev), next(next) {}
-    };
 
     Node* first_user = nullptr;
     Node* last_user = nullptr;
@@ -22,7 +31,7 @@ private:
     int moviesSeen[5] = {0};
 
     const int id;
-    const bool vip = false;
+    int num_vip = 0;
 
     int size = 0;
 
@@ -31,7 +40,8 @@ public:
     Group(const Group& toCopy) = default;
     ~Group();
 
-    void addUser(User* u);
+    void addUser(User *u);
+    void deleteUserNode(Node *toDelete);
     void watchMovie(Genre genre);
 
     bool operator<(const Group& toCompare) const;

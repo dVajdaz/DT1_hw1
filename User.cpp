@@ -4,7 +4,7 @@
 
 #include "User.h"
 
-User::User(int id, Group* group, bool vip) : id(id),  group(group), vip(vip){}
+User::User(int id,  bool vip) : id(id), vip(vip){}
 
 //--------------------------Setters--------------------------
 void User::setGroup(Group *gr) {

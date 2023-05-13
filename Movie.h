@@ -5,7 +5,12 @@
 #ifndef DS1_HW1_MOVIE_H
 #define DS1_HW1_MOVIE_H
 
+#include "User.h"
+#include "Group.h"
+
 #include "wet1util.h"
+
+#include "AVL.h"
 
 class Movie {
 private:
@@ -19,7 +24,7 @@ private:
     Genre genre;
 
 public:
-    Movie(int id, Genre genre, bool vip = false);
+    Movie(int id, int views = 0,  Genre genre = NONE, bool vip = false);
     Movie(const Movie& toCopy) = default;
     ~Movie() = default;
 
