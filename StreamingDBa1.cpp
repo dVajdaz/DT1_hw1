@@ -3,7 +3,8 @@
 streaming_database::streaming_database(): users(AVL<User>()), movies(AVL<Movie>()), groups(AVL<Group>())
 {
     for(int counter = 0; counter<5; counter++){
-        movies_by_rating[counter] = new AVL<Movie>();
+        AVL<Movie>* curr = new AVL<Movie>();
+        movies_by_rating[counter] = *curr;
     }
 }
 
@@ -25,7 +26,7 @@ StatusType streaming_database::add_movie(int movieId, Genre genre, int views, bo
         return StatusType::ALLOCATION_ERROR;
     }
 
-    if(!this->movies.insert(*toAdd)){
+    if(!this->movies.insert(toAdd)){
 
         try {
             delete toAdd;
@@ -48,7 +49,7 @@ StatusType streaming_database::remove_movie(int movieId)
 
     try{                                        //Creating a tmp movie in order to find the real one to remove
         Movie* toRemove = new Movie(movieId);
-        Movie removed = movies.remove(*toRemove);   //Finding the real toRemove in the AVL tree and removing it
+        Movie* removed = movies.remove(*toRemove);   //Finding the real toRemove in the AVL tree and removing it
         try{                                        //Deleting the tmp user
             delete toRemove;
         }catch(const std::exception e){

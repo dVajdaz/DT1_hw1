@@ -177,18 +177,25 @@ int main(){
         unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
         shuffle (vector.begin(), vector.end(), std::default_random_engine(seed));
         std::cout<<"\n     Creating The Tree \n"<<std::endl;
+        std::cout << "Insertion Vector: " << std::endl;
         for (std::vector<int>::iterator it = vector.begin() ; it != vector.end(); it++){
+            std::cout << "insert" << *it << std::endl;
             tree.insert(*it);
             assert(is_tree_valid(tree.root));
-            if(is_tree_valid(tree.root)){}
-            print2D(&tree);
+            //if(is_tree_valid(tree.root)){}
+            //print2D(&tree);
         }
+
+
+
         std::cout<<"    Deleting The Tree \n"<<std::endl;
+        std::cout << "Removal vector " << std::endl;
         shuffle (vector.begin(), vector.end(), std::default_random_engine(seed));
         for (std::vector<int>::iterator it = vector.begin() ; it != vector.end(); ++it){
+            std::cout << "remove " << *it << std::endl;
             tree.remove(*it);
-            assert(is_tree_valid(tree.root));
-            print2D(&tree);
+            assert(is_tree_valid(   tree.root));
+            //print2D(&tree);
 
         }
         if(k != 1){
@@ -197,6 +204,33 @@ int main(){
         tree.remove(*tree.root->obj);
         tree.root= nullptr;
     }
+    /*
+    tree.insert(1);
+    assert(is_tree_valid(   tree.root));
+    tree.insert(8);
+    assert(is_tree_valid(   tree.root));
+    tree.insert(6);
+    assert(is_tree_valid(   tree.root));
+    tree.insert(2);
+    assert(is_tree_valid(   tree.root));
+    tree.insert(7);
+    assert(is_tree_valid(   tree.root));
+    tree.insert(9);
+    assert(is_tree_valid(   tree.root));
+    tree.insert(4);
+    assert(is_tree_valid(   tree.root));
+    tree.insert(3);
+    assert(is_tree_valid(   tree.root));
+    tree.insert(5);
+    assert(is_tree_valid(   tree.root));
+    tree.remove(8);
+    assert(is_tree_valid(   tree.root));
+    tree.remove(1);
+    assert(is_tree_valid(   tree.root));
+    tree.remove(4);
+    assert(is_tree_valid(   tree.root)); */
+
+
     std::cout<<" S U C C E S S"<<std::endl;
     std::cout << '\n';
     if(size < 100 && count < 6){
