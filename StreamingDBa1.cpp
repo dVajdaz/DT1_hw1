@@ -307,7 +307,7 @@ StatusType streaming_database::user_watch(int userId, int movieId)
             found_movie->addViews(1);
 
             if(found_user->group)
-                found_user->group->totalViews[found_movie->getGenre()]++;
+                found_user->group->totalViews[static_cast<int>(found_movie->getGenre())]++;
 
         }
 
@@ -386,7 +386,7 @@ output_t<int> streaming_database::get_num_views(int userId, Genre genre)
         if(!found_user)
             return output_t<int>(StatusType::FAILURE);
         else{
-            int views = found_user->getMoviesSeen(genre) + *(found_user->group)->getMoviesSeen(genre) - found_user->getOffset(genre);
+            int views = found_user->getMoviesSeen(genre) + (found_user->group)->getMoviesSeen(genre) - found_user->getOffset(genre);
             return output_t<int>(views);
         }
 

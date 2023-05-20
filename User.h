@@ -5,22 +5,23 @@
 #ifndef DS1_HW1_USER_H
 #define DS1_HW1_USER_H
 
-#include "Movie.h"
+//#include "Movie.h"
 #include "Group.h"
-
+#include  <memory>
 #include "wet1util.h"
 
-#include "AVL.h"
-
-
+//#include "AVL.h"
+#include "userNode.h"
+//struct userNode;
+class Group;
 class User {
 private:
-    const int id;
+    int id;
     int moviesSeen[5] = {0};
 
     int group_offset[5] = {0};
 
-    const bool vip;
+    bool vip;
 public:
     User(int id, bool vip = false);
     User(const User& toCopy) = default;
@@ -42,7 +43,7 @@ public:
     //double setRating() const;
     bool isVip() const;
 
-    Node* self_pointer = nullptr;
+    userNode* self_pointer = nullptr;
     std::shared_ptr<Group>  group = nullptr;
 };
 

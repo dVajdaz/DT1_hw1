@@ -10,7 +10,7 @@
 
 #include "wet1util.h"
 
-#include "AVL.h"
+//#include "AVL.h"
 
 class Movie {
 private:
@@ -24,7 +24,7 @@ private:
     Genre genre;
 
 public:
-    Movie(int id, int views = 0,  Genre genre = NONE, bool vip = false, bool sortById = true);
+    Movie(int id, int views = 0,  Genre genre = Genre::NONE, bool vip = false, bool sortById = true);
     Movie(const Movie& toCopy) = default;
     ~Movie() = default;
 

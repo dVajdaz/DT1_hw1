@@ -7,8 +7,8 @@
 
 Group::Group(int id) : id(id){}
 Group::~Group() {
-    Node *current = first_user;
-    Node *next;
+    userNode *current = first_user;
+    userNode *next;
     while (current != nullptr) {
         next = current->next;
         delete current;
@@ -19,7 +19,7 @@ Group::~Group() {
 //--------------------------Setters--------------------------
 
 void Group::addUser(User *toAdd) {
-    Node* new_user = new Node();
+    userNode* new_user = new userNode();
     new_user->user = toAdd;
     new_user->next = nullptr;
 
@@ -49,7 +49,7 @@ void Group::watchMovie(Genre genre) {
     totalViews[static_cast<int>(genre)]+=size;
 }
 
-void Group::deleteUserNode(Node *toDelete) {
+void Group::deleteUserNode(userNode *toDelete) {
     if (!toDelete) {
         return;
     }
@@ -90,7 +90,7 @@ int Group::getSize() const {
     return size;
 }
 
-Node* Group::getFirstUser() {
+userNode* Group::getFirstUser() {
     return first_user;
 }
 
@@ -121,7 +121,7 @@ bool Group::operator==(const Group& g1) const{
     return id == g1.getId();
 }
 
-bool operator>(const Group& g1, Group& g2){
+bool operator>( Group const& g1, Group const& g2){
     return g2 < g1;
 }
 

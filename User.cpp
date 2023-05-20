@@ -7,9 +7,9 @@
 User::User(int id,  bool vip) : id(id), vip(vip){}
 
 //--------------------------Setters--------------------------
-void User::setGroup(Group *gr) {
+void User::setGroup(Group* gr) {
     if(gr){
-        this->group = gr;
+        this->group = std::make_shared<Group>(*gr);
     }
 }
 
@@ -46,7 +46,7 @@ int User::getMoviesSeen(Genre genre) const {
     int group_views = 0;
 
     if(group)
-        group_views = *group->getMoviesSeen(genre) - group_offset[static_cast<int>(genre)];
+        group_views = group->getMoviesSeen(genre) - group_offset[static_cast<int>(genre)];
 
     return views+group_views;
 }

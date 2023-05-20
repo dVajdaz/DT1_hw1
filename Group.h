@@ -10,24 +10,18 @@
 
 #include "wet1util.h"
 
-#include "AVL.h"
-
+//#include "AVL.h"
+//#include "userNode.h"
 class User;
 
-struct Node {
-    User *user;
-    Node* prev;
-    Node* next;
-    Node(User *user, Node* prev, Node* next) : user(user), prev(prev), next(next) {}
-    Node(): user(nullptr), prev(nullptr), next(nullptr) {}
-};
 
 
+struct userNode;
 class Group {
 private:
 
-    Node* first_user = nullptr;
-    Node* last_user = nullptr;
+    userNode* first_user = nullptr;
+    userNode* last_user = nullptr;
 
     int id;
     int num_vip = 0;
@@ -42,8 +36,9 @@ public:
 //    bool isGreaterThan(const Group& m, bool sortedById = true) const;
 //    bool isLessThan(const Group& m, bool sortedById = true) const;
     void addUser(User *u);
-    void deleteUserNode(Node *toDelete);
+    void deleteUserNode(userNode *toDelete);
     void watchMovie(Genre genre);
+
 
     bool operator<(const Group& toCompare) const;
     bool operator==(const Group& toCompare) const;
@@ -51,13 +46,13 @@ public:
     int getId() const;
     int getMoviesSeen(Genre genre) const;
     int getSize() const;
-    Node* getFirstUser();
+    userNode* getFirstUser();
     bool hasVip() const;
 
     int moviesSeen[5] = {0};
     int totalViews[5] = {0};
 };
 
-bool operator>(const Group& g1, const Group& g2);
+bool operator>( Group const& g1, Group const& g2);
 
 #endif //DS1_HW1_GROUP_H
