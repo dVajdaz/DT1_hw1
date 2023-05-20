@@ -181,14 +181,14 @@ public:
      * the tree's balance
      * @param toInsert - a value to insert into the tree
      */
-    void insert(const T &toInsert);
+    Node* insert(const T &toInsert);
 
     /**
      * Receives a value to remove from the tree and does so, while maintaining
      * the tree's balance
      * @param toRemove - a value to remove from the tree
      */
-    void remove(const T &toRemove);
+    Node* remove(const T &toRemove);
 
     /**
      * Prints the values stored in the tree in postorder
@@ -204,40 +204,50 @@ public:
 
 
     template<class T>
-    void AVL<T>::insert(const T& toInsert){ //TODO: Return a pointer to the inserted object (T* return type)
+    typename AVL<T>::Node* AVL<T>::insert(const T& toInsert){ //TODO: Return a pointer to the inserted object (T* return type)
         if(!toInsert)
             throw StatusType::INVALID_INPUT; //TODO: change to return pointer
         //If the tree is empty
         if(!this->root) {
             root = initializeNode(toInsert);
+            return root;
         }
-        else {
-            if (findNode(toInsert, root))
-                throw StatusType::INVALID_INPUT;
 
-            Node *toInsertNode = initializeNode(toInsert);
+        if (findNode(toInsert, root))
+            throw StatusType::INVALID_INPUT;
 
-            root = insertNode(toInsertNode, root);
+        Node *toInsertNode = initializeNode(toInsert);
+        root = insertNode(toInsertNode, root);
+        if(max_node == nullptr) {
+            max_node = initializeNode(toInsert);
+        }
+        else if( *max_node->obj < toInsert) {
+            *max_node->obj = toInsert;
         }
         /*
         max_val = getMaxNode(root);
         min_val = getMinNode(root);*/
         size++;
+        return toInsertNode;
     }
 
     template<class T>
-    void AVL<T>::remove(const T& toRemove){ //TODO: Return a pointer to the deleted object
+    typename AVL<T>::Node* AVL<T>::remove(const T& toRemove){ //TODO: Return a pointer to the deleted object
         if(!toRemove)
             throw StatusType::INVALID_INPUT;
 
-        if(!findNode(toRemove, root))
-           return;
+        if(!findNode(toRemove, root) || !root)
+           return nullptr;
         Node* removed = findNode(toRemove, root);
         root = removeNode(removed, root);
+        if( *max_node->obj < toRemove) {
+            *max_node->obj = toRemove;
+        }
         /*
         max_val = getMaxNode(root);
         min_val = getMinNode(root);*/
         size--;
+        return removed;
     }
 
     template<class T>
@@ -424,12 +434,7 @@ public:
         if(*parent->obj < *toInsert->obj) { parent->right = toInsert;}
         else { parent->left = toInsert; }
         toInsert->parent = parent;
-        if(max_node == nullptr) {
-            max_node = initializeNode(*toInsert->obj);
-        }
-        else if( *max_node->obj < *toInsert->obj) {
-            *max_node->obj = *toInsert->obj;
-        }
+
         //Checking the balance of the tree and rotating if needed
         return doInsertRotation(toInsert, parent, root);
     }
