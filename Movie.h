@@ -14,24 +14,25 @@
 
 class Movie {
 private:
-    const int id;
+    int id;
     int views;
     int rated = 0;
 
     double rating;
-
-    const bool vipOnly;
-
+    bool sortById;
+    bool vipOnly;
     Genre genre;
 
 public:
-    Movie(int id, int views = 0,  Genre genre = NONE, bool vip = false);
+    Movie(int id, int views = 0,  Genre genre = NONE, bool vip = false, bool sortById = true);
     Movie(const Movie& toCopy) = default;
     ~Movie() = default;
 
     bool operator<(const Movie& toCompare) const;
     bool operator==(const Movie& toCompare) const;
-
+//    bool isEqual(const Movie& m, bool sortedById = true) const;
+//    bool isGreaterThan(const Movie& m, bool sortedById = true) const;
+//    bool isLessThan(const Movie& m, bool sortedById = true) const;
     int getId() const;
     int getViews() const;
     double getRating() const;

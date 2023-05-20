@@ -31,8 +31,16 @@ void User::addViews(int genre, int views) {
 int User::getId() const{
     return id;
 }
-
-
+/*
+bool User::isEqual(const User &m, bool sortedById) const {
+    return *this == m;
+}
+bool User::isGreaterThan(const User &m, bool sortedById) const {
+    return *this > m;
+}
+bool User::isLessThan(const User &m, bool sortedById) const {
+    return *this < m;
+} */
 int User::getMoviesSeen(Genre genre) const {
     int views = moviesSeen[static_cast<int>(genre)];
     int group_views = 0;

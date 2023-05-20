@@ -167,7 +167,9 @@ public:
 
     AVL(const AVL<T> &toCopy) = default;
 
-    ~AVL() = default; //TODO: custom implementation required
+    ~AVL(); //TODO: custom implementation required
+
+    void destroy(Node* root);
 
     /**
      * Receives a Node in the tree and updates its height
@@ -181,20 +183,22 @@ public:
      * the tree's balance
      * @param toInsert - a value to insert into the tree
      */
-    Node* insert(const T &toInsert);
+    T* insert(const T &toInsert);
 
     /**
      * Receives a value to remove from the tree and does so, while maintaining
      * the tree's balance
      * @param toRemove - a value to remove from the tree
      */
-    Node* remove(const T &toRemove);
+    T* remove(const T &toRemove);
 
     /**
      * Prints the values stored in the tree in postorder
      * @param root the root of the tree
      */
-    void printPostOrder(Node* root);
+    void printPostOrder(Node* root, int*& output);
+
+    T* find(T* toFind);
     //--------------------------Tree initiation implementation--------------------------
 
 };
@@ -204,17 +208,17 @@ public:
 
 
     template<class T>
-    typename AVL<T>::Node* AVL<T>::insert(const T& toInsert){ //TODO: Return a pointer to the inserted object (T* return type)
-        if(!toInsert)
-            throw StatusType::INVALID_INPUT; //TODO: change to return pointer
+    T* AVL<T>::insert(const T& toInsert){ //TODO: Return a pointer to the inserted object (T* return type)
+        if(&toInsert == NULL)
+            return nullptr; //TODO: change to return pointer
         //If the tree is empty
         if(!this->root) {
             root = initializeNode(toInsert);
-            return root;
+            return root->obj;
         }
 
         if (findNode(toInsert, root))
-            throw StatusType::INVALID_INPUT;
+            return nullptr;
 
         Node *toInsertNode = initializeNode(toInsert);
         root = insertNode(toInsertNode, root);
@@ -228,13 +232,13 @@ public:
         max_val = getMaxNode(root);
         min_val = getMinNode(root);*/
         size++;
-        return toInsertNode;
+        return toInsertNode->obj;
     }
 
     template<class T>
-    typename AVL<T>::Node* AVL<T>::remove(const T& toRemove){ //TODO: Return a pointer to the deleted object
-        if(!toRemove)
-            throw StatusType::INVALID_INPUT;
+    T* AVL<T>::remove(const T& toRemove){ //TODO: Return a pointer to the deleted object
+        if(&toRemove == NULL)
+            return nullptr;
 
         if(!findNode(toRemove, root) || !root)
            return nullptr;
@@ -247,7 +251,7 @@ public:
         max_val = getMaxNode(root);
         min_val = getMinNode(root);*/
         size--;
-        return removed;
+        return removed->obj;
     }
 
     template<class T>
@@ -685,13 +689,31 @@ public:
     }
 
 template<class T>
-void AVL<T>::printPostOrder(Node* root) {
-    if(!root) {
+AVL<T>::~AVL() {
+    destroy(root);
+}
+
+template<class T>
+void AVL<T>::destroy(AVL::Node *root) {
+    if(!root)
         return;
-    }
-    printPostOrder(root->left);
-    printPostOrder(root->right);
-    std::cout << *root->obj << std::endl;
+    destroy(root->left);
+    destroy(root->right);
+    delete root;
+}
+template <class T>
+T* AVL<T>::find(T* toFind) {
+    Node* found = findNode(*toFind, root);
+    if(!found) return nullptr;
+    return found->obj;
+}
+template<class T>
+void AVL<T>::printPostOrder(AVL::Node *root, int *&output) {
+    if(!root)
+        return;
+    printPostOrder(root->right, output);
+    *(output++) = root->obj->getId();
+    printPostOrder(root->left, output);
 }
 
 

@@ -25,7 +25,9 @@ public:
     User(int id, bool vip = false);
     User(const User& toCopy) = default;
     ~User() = default;
-
+//    bool isEqual(const User& m, bool sortedById = true) const;
+//    bool isGreaterThan(const User& m, bool sortedById = true) const;
+//    bool isLessThan(const User& m, bool sortedById = true) const;
     void setGroup(Group* gr);
     void setOffset(int* offsets);
     void watchMovie(Genre genre);
@@ -41,7 +43,7 @@ public:
     bool isVip() const;
 
     Node* self_pointer = nullptr;
-    std::shared_ptr<DS::Group>  group = nullptr;
+    std::shared_ptr<Group>  group = nullptr;
 };
 
 bool operator>(const User& u1, const User& u2);

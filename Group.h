@@ -29,7 +29,7 @@ private:
     Node* first_user = nullptr;
     Node* last_user = nullptr;
 
-    const int id;
+    int id;
     int num_vip = 0;
 
     int size = 0;
@@ -38,7 +38,9 @@ public:
     Group(int id);
     Group(const Group& toCopy) = default;
     ~Group();
-
+//    bool isEqual(const Group& m, bool sortedById = true) const;
+//    bool isGreaterThan(const Group& m, bool sortedById = true) const;
+//    bool isLessThan(const Group& m, bool sortedById = true) const;
     void addUser(User *u);
     void deleteUserNode(Node *toDelete);
     void watchMovie(Genre genre);

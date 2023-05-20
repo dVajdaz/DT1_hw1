@@ -103,6 +103,16 @@ bool Group::hasVip() const {
 }
 
 //--------------------------Operators--------------------------
+/*
+bool Group::isEqual(const Group &m, bool sortedById) const {
+    return *this == m;
+}
+bool Group::isGreaterThan(const Group &m, bool sortedById) const {
+    return *this > m;
+}
+bool Group::isLessThan(const Group &m, bool sortedById) const {
+    return *this < m;
+} */
 bool Group::operator<(const Group& g1) const{
     return id < g1.getId();
 }

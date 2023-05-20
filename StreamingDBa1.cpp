@@ -9,7 +9,10 @@ streaming_database::streaming_database(): users(AVL<User>()), movies(AVL<Movie>(
 
 streaming_database::~streaming_database()
 {
-	// TODO: Your code goes here
+    users.destroy(users.root);
+    movies.destroy(movies.root);
+    for (AVL<Movie> genre_tree : movies_by_rating)
+        genre_tree.destroy(genre_tree.root);
 }
 
 
@@ -22,8 +25,10 @@ StatusType streaming_database::add_movie(int movieId, Genre genre, int views, bo
     try {
         toAdd = new Movie(movieId,views, genre, vipOnly);
     } catch (const std::bad_alloc&) {
+        delete toAdd;
         return StatusType::ALLOCATION_ERROR;
     }
+
 
     if(!movies.insert(*toAdd)){
 
@@ -35,8 +40,36 @@ StatusType streaming_database::add_movie(int movieId, Genre genre, int views, bo
 
         return StatusType::FAILURE;
     }
+    Movie* toAddByRating;
+    try {
+        toAddByRating = new Movie(movieId,views, genre, vipOnly, true);
+    } catch (const std::bad_alloc&) {
+        delete toAddByRating;
+        try {
+            movies.remove(*toAdd);
+            delete toAdd;
+        }
+        catch (const std::exception&) {
+            delete toAdd;
+            return StatusType::ALLOCATION_ERROR;
+        }
 
-    this->movies_by_rating[static_cast<int>(genre)].insert(*toAdd); //might need another try-catch
+        return StatusType::ALLOCATION_ERROR;
+    }
+    if(!this->movies_by_rating[static_cast<int>(genre)].insert(*toAddByRating)) {
+        try {
+            movies.remove(*toAdd);
+            delete toAdd;
+            delete toAddByRating;
+        }
+        catch (const std::exception&) {
+            delete toAdd;
+            delete toAddByRating;
+            return StatusType::ALLOCATION_ERROR;
+        }
+
+        return StatusType::FAILURE;
+    }
 
     return StatusType::SUCCESS;
 }
@@ -56,7 +89,6 @@ StatusType streaming_database::remove_movie(int movieId)
         }
 
         if(!removed){
-            delete toRemove;
             return StatusType::FAILURE;
         }
 
@@ -222,12 +254,13 @@ StatusType streaming_database::add_user_to_group(int userId, int groupId)
 {
     if(groupId<=0 || userId <= 0)
         return StatusType::INVALID_INPUT;
-
+    User* tmp_user;
+    Group* tmp_group;
     try{
-            User* tmp_user = new User(userId);
-            Group* tmp_group = new Group(groupId);
+            tmp_user = new User(userId);
+            tmp_group = new Group(groupId);
 
-            User* found_user = users.find(tmp_user); //TODO: Implement find method which returns T*
+            User* found_user = users.find(tmp_user);
             Group* found_group = groups.find(tmp_group);
 
             if(!found_user || !found_group || (found_user->group != nullptr)){ //In case found_user is already in found_group - is it success or failure??
@@ -244,6 +277,8 @@ StatusType streaming_database::add_user_to_group(int userId, int groupId)
         delete tmp_user;
         delete tmp_group;
     }catch(const std::exception e){
+        delete tmp_user;
+        delete tmp_group;
         return StatusType::ALLOCATION_ERROR;
     }
 
@@ -318,7 +353,7 @@ StatusType streaming_database::group_watch(int groupId,int movieId)
 
 output_t<int> streaming_database::get_all_movies_count(Genre genre)
 {
-    int total = movies_by_rating[static_cast<int>(genre)]->getSize();
+    int total = movies_by_rating[static_cast<int>(genre)].size;
     return output_t<int>(total);
 
     static int i = 0;
@@ -327,7 +362,12 @@ output_t<int> streaming_database::get_all_movies_count(Genre genre)
 
 StatusType streaming_database::get_all_movies(Genre genre, int *const output)
 {
-    //Fill the array using the tree sorted by rating of the given genre with in(?)order algorithm
+    if(!output) {
+        return StatusType::INVALID_INPUT;
+    }
+    int* copy = output;
+    if(movies_by_rating[static_cast<int>(genre)].size == 0) {return StatusType::FAILURE;}
+    movies_by_rating[static_cast<int>(genre)].printPostOrder(movies_by_rating[static_cast<int>(genre)].root,copy);
     output[0] = 4001;
     output[1] = 4002;
     return StatusType::SUCCESS;
@@ -395,9 +435,10 @@ output_t<int> streaming_database::get_group_recommendation(int groupId)
     if(groupId<=0)
         return output_t<int>(StatusType::INVALID_INPUT);
 
-
+    Group* tmp_group;
     try{
-        Group* gr = groups.find(groupId);
+        tmp_group = new Group(groupId);
+        Group* gr = groups.find(tmp_group);
 
         int genre = 0;
         int max_views = 0;
@@ -413,9 +454,11 @@ output_t<int> streaming_database::get_group_recommendation(int groupId)
                 genre = (genre>current) ? genre : current;
             }
         }
+        delete tmp_group;
         //return id of the best rated movie of the computed genre
 
     }catch(const std::exception e){
+        delete tmp_group;
         return output_t<int>(StatusType::ALLOCATION_ERROR);
     }
 
