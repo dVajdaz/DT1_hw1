@@ -154,13 +154,13 @@ public:
      * @param parent - the nodes' parent
      * @param root - the root of the tree
      */
-    void removeBST(Node *toRemove, Node* &parent, Node* root);
+    void removeBST(Node *toRemove, Node* &parent, Node*& root);
 
     /**
      * Receives the root of the tree and removes it
      * @param root - the root of the tree
      */
-    void removeRoot(Node* root, Node*& myParent);
+    void removeRoot(Node* root, Node*& realRoot, Node*& myParent);
 
 
     AVL();
@@ -214,6 +214,8 @@ public:
         //If the tree is empty
         if(!this->root) {
             root = initializeNode(toInsert);
+            max_node = initializeNode(toInsert);
+            size++;
             return root->obj;
         }
 
@@ -222,10 +224,8 @@ public:
 
         Node *toInsertNode = initializeNode(toInsert);
         root = insertNode(toInsertNode, root);
-        if(max_node == nullptr) {
-            max_node = initializeNode(toInsert);
-        }
-        else if( *max_node->obj < toInsert) {
+
+        if( *max_node->obj < toInsert) {
             *max_node->obj = toInsert;
         }
         /*
@@ -244,8 +244,16 @@ public:
            return nullptr;
         Node* removed = findNode(toRemove, root);
         root = removeNode(removed, root);
-        if( *max_node->obj < toRemove) {
-            *max_node->obj = toRemove;
+        if(*max_node->obj == *removed->obj) {
+            Node* tmp = root;
+            if(!tmp) {
+                delete max_node;
+                max_node = nullptr;
+            }
+            else {
+                while (tmp->right) tmp = tmp->right;
+                *max_node->obj = *tmp->obj;
+            }
         }
         /*
         max_val = getMaxNode(root);
@@ -522,9 +530,9 @@ public:
         *n2->obj = temp;
     }
     template<class T>
-    void AVL<T>::removeBST(Node* toRemove, Node*& parent, Node* root) {
+    void AVL<T>::removeBST(Node* toRemove, Node*& parent, Node*& root) {
         if(toRemove == root) {
-            removeRoot(root, parent);
+            removeRoot(root, root, parent);
         }
         else if(isLeaf(toRemove)) {
             if(parent->left == toRemove) {
@@ -569,16 +577,18 @@ public:
 
     }
     template<class T>
-    void AVL<T>::removeRoot(Node *root, Node*& myParent) {
+    void AVL<T>::removeRoot(Node* root, Node *&realRoot, Node*& myParent) {
         Node* toRemove = nullptr;
-        if(isLeaf(root)) { root = nullptr;}
+        if(isLeaf(root)) {
+            realRoot = nullptr;
+        }
         else if (hasOneSon(root)) {
             toRemove = root;
             if(root->right == nullptr) {
-                *root = *root->left;
+                realRoot = realRoot->left;
             }
-            else { *root = *root->right;}
-            root->parent = nullptr;
+            else { realRoot = realRoot->right;}
+            realRoot->parent = nullptr;
             toRemove->parent = nullptr;
             toRemove->right = nullptr;
             toRemove->left = nullptr;
@@ -680,12 +690,9 @@ public:
     }
     template<class T>
     typename AVL<T>::Node* AVL<T>::removeNode(Node* toRemove, Node* root) {
-
             Node *toRemove_parent = toRemove->parent;
             removeBST(toRemove, toRemove_parent, root);
             return doRemoveRotation(toRemove_parent, root);
-
-
     }
 
 template<class T>

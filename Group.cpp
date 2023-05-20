@@ -26,10 +26,9 @@ void Group::addUser(User *toAdd) {
     if(!first_user){
         new_user->prev = nullptr;
         first_user = new_user;
-        last_user = new_user;
     }
 
-    if(last_user){
+    else if(last_user){
         last_user->next = new_user;
         new_user->prev = last_user;
     }

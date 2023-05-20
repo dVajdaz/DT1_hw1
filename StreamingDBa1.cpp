@@ -56,9 +56,12 @@ StatusType streaming_database::add_movie(int movieId, Genre genre, int views, bo
 
         return StatusType::ALLOCATION_ERROR;
     }
-    if(!this->movies_by_rating[static_cast<int>(genre)].insert(*toAddByRating)) {
+    if(!this->movies_by_rating[static_cast<int>(genre)].insert(*toAddByRating) ||
+        !this->movies_by_rating[static_cast<int>(Genre::NONE)].insert(*toAddByRating)) {
         try {
             movies.remove(*toAdd);
+            this->movies_by_rating[static_cast<int>(genre)].remove(*toAddByRating);
+            this->movies_by_rating[static_cast<int>(Genre::NONE)].remove(*toAddByRating);
             delete toAdd;
             delete toAddByRating;
         }
@@ -94,7 +97,7 @@ StatusType streaming_database::remove_movie(int movieId)
 
 
         this->movies_by_rating[static_cast<int>(removed->getGenre())].remove(*removed);
-
+        this->movies_by_rating[static_cast<int>(Genre::NONE)].remove(*removed);
         try{
             delete removed;
         }catch(const std::exception e){
@@ -366,7 +369,9 @@ StatusType streaming_database::get_all_movies(Genre genre, int *const output)
         return StatusType::INVALID_INPUT;
     }
     int* copy = output;
-    if(movies_by_rating[static_cast<int>(genre)].size == 0) {return StatusType::FAILURE;}
+    if(movies_by_rating[static_cast<int>(genre)].size == 0) {
+        return StatusType::FAILURE;
+    }
     movies_by_rating[static_cast<int>(genre)].printPostOrder(movies_by_rating[static_cast<int>(genre)].root,copy);
     output[0] = 4001;
     output[1] = 4002;
@@ -386,7 +391,8 @@ output_t<int> streaming_database::get_num_views(int userId, Genre genre)
         if(!found_user)
             return output_t<int>(StatusType::FAILURE);
         else{
-            int views = found_user->getMoviesSeen(genre) + (found_user->group)->getMoviesSeen(genre) - found_user->getOffset(genre);
+            int views = found_user->getMoviesSeen(genre);
+            if(found_user->group) views += (found_user->group)->getMoviesSeen(genre) - found_user->getOffset(genre);
             return output_t<int>(views);
         }
 
