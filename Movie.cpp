@@ -10,8 +10,9 @@ void Movie::addViews(const int toAdd) {
     views+=toAdd;
 }
 
-void Movie::Rate(const double toAdd) {  //Should first addViews() and ONLY THEN compute the new rating !!!
-    rating = (rating+toAdd)/views;
+void Movie::Rate(const double toAdd) {
+    rated++;
+    rating = (rating+toAdd)/rated;
 }
 
 //--------------------------Getters--------------------------

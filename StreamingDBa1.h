@@ -31,6 +31,8 @@ private:
 
 	AVL<Movie> movies_by_rating[5];
 
+	int getTotalMovies(Genre genre) const;
+
 
 public:
 	// <DO-NOT-MODIFY> {

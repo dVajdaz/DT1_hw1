@@ -19,6 +19,7 @@ struct Node {
     Node* prev;
     Node* next;
     Node(User *user, Node* prev, Node* next) : user(user), prev(prev), next(next) {}
+    Node(): user(nullptr), prev(nullptr), next(nullptr) {}
 };
 
 
@@ -27,8 +28,6 @@ private:
 
     Node* first_user = nullptr;
     Node* last_user = nullptr;
-
-    int moviesSeen[5] = {0};
 
     const int id;
     int num_vip = 0;
@@ -49,7 +48,12 @@ public:
 
     int getId() const;
     int getMoviesSeen(Genre genre) const;
+    int getSize() const;
+    Node* getFirstUser();
     bool hasVip() const;
+
+    int moviesSeen[5] = {0};
+    int totalViews[5] = {0};
 };
 
 bool operator>(const Group& g1, const Group& g2);

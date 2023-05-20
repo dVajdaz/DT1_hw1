@@ -23,13 +23,28 @@ void User::watchMovie(Genre genre) {
     this->moviesSeen[static_cast<int>(genre)]++;
 }
 
+void User::addViews(int genre, int views) {
+    moviesSeen[genre] += views;
+}
+
 //--------------------------Getters--------------------------
 int User::getId() const{
     return id;
 }
 
+
 int User::getMoviesSeen(Genre genre) const {
-    return moviesSeen[static_cast<int>(genre)];
+    int views = moviesSeen[static_cast<int>(genre)];
+    int group_views = 0;
+
+    if(group)
+        group_views = *group->getMoviesSeen(genre) - group_offset[static_cast<int>(genre)];
+
+    return views+group_views;
+}
+
+int User::getOffset(Genre genre) const {
+    return group_offset[static_cast<int>(genre)];
 }
 
 bool User::isVip() const {

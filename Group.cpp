@@ -14,8 +14,6 @@ Group::~Group() {
         delete current;
         current = next;
     }
-
-    delete[] movies_seen;
 }
 
 //--------------------------Setters--------------------------
@@ -37,14 +35,18 @@ void Group::addUser(User *toAdd) {
     }
 
     last_user = new_user;
+    toAdd->self_pointer = new_user;
 
     if(new_user->user->isVip())
         num_vip++;
 
+    for(int current = 0; current <5; current++)
+        totalViews[current]+=toAdd->getMoviesSeen(static_cast<Genre>(current));
 }
 
 void Group::watchMovie(Genre genre) {
-    this->moviesSeen[static_cast<int>(genre)]++;
+    moviesSeen[static_cast<int>(genre)]++;
+    totalViews[static_cast<int>(genre)]+=size;
 }
 
 void Group::deleteUserNode(Node *toDelete) {
@@ -71,16 +73,25 @@ void Group::deleteUserNode(Node *toDelete) {
 
     size--;
 
-    try{
-        delete toDelete; //TODO: DELETING THE NODE. NOT DELETING THE USER ITSELF YET. MIGHT CAUSE MEMORY LEAK !!!
-    } catch(const std::exception e){
-        throw e;
+    for(int current = 0; current<5; current++){
+        totalViews[current]-=toDelete->user->getMoviesSeen(static_cast<Genre>(current));
+        totalViews[current]-=(moviesSeen[current]-toDelete->user->getOffset(static_cast<Genre>(current)));
     }
+    delete toDelete;
+
 }
 
 //--------------------------Getters--------------------------
 int Group::getId() const{
     return id;
+}
+
+int Group::getSize() const {
+    return size;
+}
+
+Node* Group::getFirstUser() {
+    return first_user;
 }
 
 int Group::getMoviesSeen(Genre genre) const {
@@ -103,3 +114,4 @@ bool Group::operator==(const Group& g1) const{
 bool operator>(const Group& g1, Group& g2){
     return g2 < g1;
 }
+

@@ -16,6 +16,7 @@ class Movie {
 private:
     const int id;
     int views;
+    int rated = 0;
 
     double rating;
 

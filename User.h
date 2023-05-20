@@ -29,12 +29,14 @@ public:
     void setGroup(Group* gr);
     void setOffset(int* offsets);
     void watchMovie(Genre genre);
+    void addViews(int genre, int views);
 
     bool operator<(const User& toCompare) const;
     bool operator==(const User& toCompare) const;
 
     int getId() const;
     int getMoviesSeen(Genre genre) const;
+    int getOffset(Genre genre) const;
     //double setRating() const;
     bool isVip() const;
 
