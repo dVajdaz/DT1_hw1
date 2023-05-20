@@ -373,8 +373,8 @@ StatusType streaming_database::get_all_movies(Genre genre, int *const output)
         return StatusType::FAILURE;
     }
     movies_by_rating[static_cast<int>(genre)].printPostOrder(movies_by_rating[static_cast<int>(genre)].root,copy);
-    output[0] = 4001;
-    output[1] = 4002;
+    //output[0] = 4001;
+    /output[1] = 4002;
     return StatusType::SUCCESS;
 }
 
