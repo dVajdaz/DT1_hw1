@@ -24,25 +24,27 @@ private:
     Genre genre;
 
 public:
-    Movie(int id, int views = 0,  Genre genre = Genre::NONE, bool vip = false, bool sortById = true);
-    Movie(const Movie& toCopy) = default;
+    Movie(int id, int views = 0, Genre genre = Genre::NONE, bool vip = false, bool sortById = true);
+
+    Movie(const Movie &toCopy) = default;
+
     ~Movie() = default;
 
-    bool operator<(const Movie& toCompare) const;
-    bool operator==(const Movie& toCompare) const;
-//    bool isEqual(const Movie& m, bool sortedById = true) const;
-//    bool isGreaterThan(const Movie& m, bool sortedById = true) const;
-//    bool isLessThan(const Movie& m, bool sortedById = true) const;
     int getId() const;
+
     int getViews() const;
+
     double getRating() const;
+
     bool isVipOnly() const;
+
     Genre getGenre() const;
 
     void addViews(const int toAdd);
-    void Rate(const double toAdd);
-};
 
-bool operator>(const Movie& m1, const Movie& m2);
+    void Rate(const double toAdd);
+
+    void setSortingType(const bool sortingType);
+};
 
 #endif //DS1_HW1_MOVIE_H

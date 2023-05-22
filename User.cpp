@@ -4,23 +4,37 @@
 
 #include "User.h"
 
-User::User(int id,  bool vip) : id(id), vip(vip){}
+User::User(int id, bool vip) : id(id), vip(vip) {}
+
+User::~User() {
+    if (self_pointer && group)
+        group->deleteUserNode(self_pointer);
+
+    self_pointer = nullptr;
+    group = nullptr;
+}
 
 //--------------------------Setters--------------------------
-void User::setGroup(Group* gr) {
-    if(gr){
-        this->group = std::make_shared<Group>(*gr);
+void User::setGroup(Group *gr) {
+    if (gr) {
+        this->group = gr;
     }
 }
 
 void User::setOffset(int *offsets) {
-    for(int current = 0; current<5; current++){
+    for (int current = 0; current < 5; current++) {
         this->group_offset[current] = offsets[current];
     }
 }
 
 void User::watchMovie(Genre genre) {
     this->moviesSeen[static_cast<int>(genre)]++;
+    this->moviesSeen[4]++;
+
+    if (group) {
+        this->group->totalViews[static_cast<int>(genre)]++;
+        this->group->totalViews[4]++;
+    }
 }
 
 void User::addViews(int genre, int views) {
@@ -28,9 +42,10 @@ void User::addViews(int genre, int views) {
 }
 
 //--------------------------Getters--------------------------
-int User::getId() const{
+int User::getId() const {
     return id;
 }
+
 /*
 bool User::isEqual(const User &m, bool sortedById) const {
     return *this == m;
@@ -45,10 +60,14 @@ int User::getMoviesSeen(Genre genre) const {
     int views = moviesSeen[static_cast<int>(genre)];
     int group_views = 0;
 
-    if(group)
+    if (group)
         group_views = group->getMoviesSeen(genre) - group_offset[static_cast<int>(genre)];
 
-    return views+group_views;
+    return views + group_views;
+}
+
+int User::getSoloSeen(Genre genre) const {
+    return moviesSeen[static_cast<int>(genre)];
 }
 
 int User::getOffset(Genre genre) const {
@@ -57,17 +76,4 @@ int User::getOffset(Genre genre) const {
 
 bool User::isVip() const {
     return vip;
-}
-
-//--------------------------Operators--------------------------
-bool User::operator<(const User& m1) const{
-    return id < m1.getId();
-}
-
-bool User::operator==(const User& m1) const{
-    return id == m1.getId();
-}
-
-bool operator>(const User& m1, const User& m2){
-    return m2 < m1;
 }
