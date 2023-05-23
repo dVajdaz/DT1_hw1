@@ -4,11 +4,16 @@ streaming_database::streaming_database() : users(AVL<User, CompareById<User>>())
                                            movies(AVL<Movie, CompareById<Movie>>()),
                                            groups(AVL<Group, CompareById<Group>>()) {
     for (int counter = 0; counter < 5; counter++) {
-        movies_by_rating[counter] = *(new AVL<Movie, CompareByRating>());
+        movies_by_rating[counter] = AVL<Movie, CompareByRating>();
     }
 }
 
-streaming_database::~streaming_database() = default;
+streaming_database::~streaming_database(){
+        users.setObjectDelete();
+        movies.setObjectDelete();
+        groups.setObjectDelete();
+
+}
 
 
 StatusType streaming_database::add_movie(int movieId, Genre genre, int views, bool vipOnly) {
@@ -328,8 +333,11 @@ output_t<int> streaming_database::get_num_views(int userId, Genre genre) {
         User *found_user = users.find(tmp_user);
 
 
-        if (!found_user)
+        if (!found_user){
+            delete tmp_user;
             return output_t<int>(StatusType::FAILURE);
+        }
+
         else {
             int views = found_user->getMoviesSeen(genre);
 
@@ -359,8 +367,12 @@ StatusType streaming_database::rate_movie(int userId, int movieId, int rating) {
         User *found_user = users.find(tmp_user);
         Movie *found_movie = movies.find(tmp_movie);
 
-        if (!found_movie || !found_user || (!found_user->isVip() && found_movie->isVipOnly()))
+        if (!found_movie || !found_user || (!found_user->isVip() && found_movie->isVipOnly())){
+            delete tmp_user;
+            delete tmp_movie;
             return StatusType::FAILURE;
+        }
+
 
         movies_by_rating[static_cast<int>(found_movie->getGenre())].remove(*found_movie);
         movies_by_rating[static_cast<int>(Genre::NONE)].remove(*found_movie);
@@ -370,14 +382,16 @@ StatusType streaming_database::rate_movie(int userId, int movieId, int rating) {
         movies_by_rating[static_cast<int>(found_movie->getGenre())].insert(*found_movie);
         movies_by_rating[static_cast<int>(Genre::NONE)].insert(*found_movie);
 
+        delete tmp_user;
+        delete tmp_movie;
+
     } catch (const std::exception e) {
         delete tmp_user;
         delete tmp_movie;
         return StatusType::ALLOCATION_ERROR;
     }
 
-    delete tmp_user;
-    delete tmp_movie;
+
     return StatusType::SUCCESS;
 }
 
@@ -400,8 +414,11 @@ output_t<int> streaming_database::get_group_recommendation(int groupId) {
         int genre = 0;
         int max_views = 0;
 
-        if (!gr || gr->getSize() == 0)
+        if (!gr || gr->getSize() == 0){
+            delete tmp_group;
             return output_t<int>(StatusType::FAILURE);
+        }
+
 
         for (int current = 0; current < 4; current++) {
             if (max_views < gr->totalViews[current]) {

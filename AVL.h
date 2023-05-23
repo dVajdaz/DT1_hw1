@@ -31,19 +31,33 @@ public:
         Node *right;
         Node *parent;
 
+        bool *deleteObject;
+
+        /*
+        Node(T& toAdd) {
+            obj = &toAdd;
+
+            left = nullptr;
+            right = nullptr;
+            parent = nullptr;
+
+            height = 0;
+        }*/
+
         ~Node() {
-            delete left;
-            delete right;
+            if(*deleteObject && obj != nullptr)
+                delete obj;
         }
     };
 
     Node *max_node = nullptr; //A pointer to the node containing the largest value in the tree
     Node *root; //A pointer to the root of the current tree
 
+    bool deleteObject = false;
     Comparator compare;
 
     //--------------------------Node operations--------------------------
-    Node *initializeNode(T &obj);
+    //Node *initializeNode(T &obj);
 
     Node *findNode(const T &toSearch, Node *subtree);
 
@@ -102,15 +116,15 @@ public:
 
     AVL(const AVL<T, Comparator> &toCopy) = default;
 
-    ~AVL(); //TODO: custom implementation required
-
-    void destroy(Node *root);
+    ~AVL();
 
     /**
      * Receives a Node in the tree and updates its height
      * @param toUpdate - a Node
      */
     void updateHeight(Node *toUpdate);
+
+    void destroy(Node* toDestroy);
 
     //--------------------------Tree operations--------------------------
     /**
@@ -138,6 +152,8 @@ public:
     Node *getMinNode(Node *node) const;
 
     Node *getMaxNode(Node *node) const;
+
+    void setObjectDelete();
 };
 
 //--------------------------Tree operations implementation--------------------------
@@ -146,17 +162,7 @@ AVL<T, Comparator>::AVL() : root(NULL), compare(), size(0) {}
 
 template<class T, class Comparator>
 AVL<T, Comparator>::~AVL() {
-//    destroy(root);
-    delete root;
-}
-
-template<class T, class Comparator>
-void AVL<T, Comparator>::destroy(AVL::Node *root) {
-    if (!root)
-        return;
-    destroy(root->left);
-    destroy(root->right);
-    delete root;
+    destroy(root);
 }
 
 template<class T, class Comparator>
@@ -173,8 +179,19 @@ void AVL<T, Comparator>::insert(T &toInsert) { //TODO: Return a pointer to the i
 
     //If the tree is empty
     if (!root) {
-        root = initializeNode(toInsert);
-        max_node = initializeNode(toInsert);
+        Node *toInsertNode = new Node;
+        toInsertNode->obj = &toInsert;
+        toInsertNode->right = NULL;
+        toInsertNode->left = NULL;
+        toInsertNode->parent = NULL;
+        toInsertNode->height = 0;
+        toInsertNode->deleteObject = &(AVL::deleteObject);
+
+        root = toInsertNode;
+        max_node = toInsertNode;
+
+        //root = initializeNode(toInsert);
+        //max_node = initializeNode(toInsert);
         size++;
         return;
     }
@@ -182,7 +199,16 @@ void AVL<T, Comparator>::insert(T &toInsert) { //TODO: Return a pointer to the i
     if (findNode(toInsert, root))
         return;
 
-    Node *toInsertNode = initializeNode(toInsert);
+    //Node *toInsertNode = initializeNode(toInsert);
+
+    Node *toInsertNode = new Node;
+    toInsertNode->obj = &toInsert;
+    toInsertNode->right = NULL;
+    toInsertNode->left = NULL;
+    toInsertNode->parent = NULL;
+    toInsertNode->height = 0;
+    toInsertNode->deleteObject = &(AVL::deleteObject);
+
     root = insertNode(toInsertNode, root);
 
     max_node = getMaxNode(root);
@@ -248,6 +274,11 @@ void AVL<T, Comparator>::printPostOrder(AVL::Node *root, int *&output) {
     printPostOrder(root->right, output);
     *(output++) = root->obj->getId();
     printPostOrder(root->left, output);
+}
+
+template<class T, class Comparator>
+void AVL<T, Comparator>::setObjectDelete(){
+    deleteObject = true;
 }
 
 //--------------------------Rotations implementation--------------------------
@@ -332,6 +363,7 @@ AVL<T, Comparator>::LR(Node *toRotate) {
 //Note that RR and LL are rotateLeft and rotateRight respectively
 
 //--------------------------Node operations implementation--------------------------
+/*
 template<class T, class Comparator>
 typename AVL<T, Comparator>::Node *AVL<T, Comparator>::initializeNode(T &obj) {
     Node *newNode = new Node;
@@ -343,8 +375,14 @@ typename AVL<T, Comparator>::Node *AVL<T, Comparator>::initializeNode(T &obj) {
     newNode->parent = NULL;
     newNode->height = 0;
 
+    newNode->deleteObject = &(AVL::deleteObject);
+
+    Node newNode = Node(obj);
+    newNode.deleteObject = &(AVL::deleteObject);
+
     return newNode;
 }
+*/
 
 template<class T, class Comparator>
 typename AVL<T, Comparator>::Node *AVL<T, Comparator>::findNode(const T &toSearch, Node *subtree) {
@@ -538,6 +576,18 @@ typename AVL<T, Comparator>::Node *AVL<T, Comparator>::getMaxNode(Node *node) co
         return node;
 
     return getMaxNode(node->right);
+}
+
+template<class T, class Comparator>
+void AVL<T, Comparator>::destroy(Node* toDestroy) {
+    if(!toDestroy)
+        return;
+
+    destroy(toDestroy->left);
+
+    destroy(toDestroy->right);
+
+    delete toDestroy;
 }
 
 #endif
